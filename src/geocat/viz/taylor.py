@@ -819,13 +819,15 @@ class TaylorDiagram(object):
         self._ax.axis['top', 'right', 'left'].major_ticklabels.set_fontsize(ticklabel_fontsize)
         self._ax.axis['top', 'right'].label.set_fontsize(axislabel_fontsize)
         self._ax.axis['top', 'right'].label.set_pad(axislabel_pad)
-#YS         
+#YS      
         self._ax.axis['top', 'right', 'left'].major_ticks.set_ticksize(tick_length) # adjust the tick length
         self._ax.axis['top', 'right', 'left'].major_ticks.set_color(labelcolor) # adjust the tick color
+        self._ax.axis['top', 'right', 'left'].major_ticks.set_linewidth(xwidth) # adjust the tick width
         self._ax.axis['top', 'right', 'left'].major_ticklabels.set_pad(tick_pad) # ajust the tick padding
         self._ax.axis['top', 'right', 'left'].line.set_color(labelcolor) # adjust the axis line color
         self._ax.axis['top', 'right', 'left'].line.set_linewidth(xwidth) # adjust the axis line width
-        self._ax.tick_params(axis='both', which='major', width=xwidth) # adjust the tick width
+        self._ax.tick_params(axis='both', which='major', width = xwidth) # adjust the tick line width
+        self._ax.axis['top', 'right', 'left'].major_ticklabels.set_color(labelcolor) # adbjust the tick label color
 #YS         
     # Internal functions
     def _bias_to_marker_size(self, bias):
