@@ -1,18 +1,15 @@
-"""Taylor Diagrams."""
+# %%
 import warnings
 import typing
-
 import numpy as np
-
 import xarray as xr
-
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.projections import PolarAxes
 import mpl_toolkits.axisartist.floating_axes as fa
 import mpl_toolkits.axisartist.grid_finder as gf
 
-
+# %%
 class TaylorDiagram(object):
     """Taylor Diagram.
 
@@ -62,7 +59,10 @@ class TaylorDiagram(object):
                  rect: int = 111,
                  label: str = 'REF',
                  std_range: tuple = (0, 1.65),
-                 std_level: list = np.arange(0, 1.51, 0.25)):
+                 std_level: list = np.arange(0, 1.51, 0.25),
+                 labelcolor: str = '#6b6b6b',
+                 linewidth: float = 0.5,
+                 ):
         """Create base Taylor Diagram.
 
         Parameters
@@ -134,17 +134,17 @@ class TaylorDiagram(object):
         ax = fa.FloatingSubplot(self.fig, rect, grid_helper=ghelper)
         self.fig.add_subplot(ax)
 
-        # Adjust axes for Correlation
+        # Adjust axes for Correlation, the curve axis
         ax.axis["top"].set_axis_direction("bottom")  # "Angle axis"
         ax.axis["top"].toggle(ticklabels=True, label=True)
         ax.axis["top"].major_ticklabels.set_axis_direction("right")
         ax.axis["top"].label.set_axis_direction("top")
         ax.axis["top"].label.set_text("Correlation")
 
-        # Standard deviation ("X axis")
+        # Standard deviation ("X axis"), the bottom axis
         ax.axis["left"].set_axis_direction("bottom")
 
-        # Standard deviation ("Y axis")
+        # Standard deviation ("Y axis"), the left axis
         ax.axis["right"].set_axis_direction("top")
         ax.axis["right"].toggle(ticklabels=True, label=True)
         ax.axis["right"].major_ticklabels.set_axis_direction("left")
@@ -159,7 +159,7 @@ class TaylorDiagram(object):
 
         # Bottom axis is not needed
         ax.axis["bottom"].set_visible(False)
-
+           
         self._ax = ax  # Graphical axes
         self.ax = ax.get_aux_axes(tr)  # Polar coordinates
 
@@ -168,9 +168,13 @@ class TaylorDiagram(object):
         r_array = np.zeros_like(t_array) + self.refstd
         h_plot, = self.ax.plot(t_array,
                                r_array,
-                               linewidth=1,
+#YS                               linewidth=1,
                                linestyle=(0, (9, 5)),
-                               color='black',
+#YS                               color='black',
+#YS
+                               color=labelcolor, # set the color of the reference line
+                               linewidth=linewidth, # set the width of the reference line
+#YS                               
                                zorder=1)
 
         # Set aspect ratio
@@ -196,6 +200,9 @@ class TaylorDiagram(object):
                       model_outlier_on: bool = False,
                       percent_bias_on: bool = False,
                       bias_array: bool = None,
+# YS                      
+                      labelsize: float = 14, # set the outlier label size
+# YS                      
                       *args,
                       **kwargs):
         """Add a model set (*stddev*, *corrcoeff*) to the Taylor diagram. NCL-
@@ -377,7 +384,9 @@ class TaylorDiagram(object):
                     self.ax.text(0.08 + self.modelOutside * 0.22,
                                  -0.10,
                                  r'$\frac{%.2f}{%.2f}$' % (std, corr),
-                                 fontsize=17,
+# YS                                 fontsize=17,
+                                 fontsize = labelsize, # set the font size of the outlier label
+# YS                                  
                                  transform=self.ax.transAxes)
 
         return modelTexts, modelset
@@ -677,6 +686,10 @@ class TaylorDiagram(object):
                    yloc: float = 0.95,
                    loc: str = "upper right",
                    fontsize: float = 14,
+#YS                   
+                   ncol: int = 2, # set the number of columns in the legend
+                   handletextpad: float = 0.5, # set the padding between the handle and the text
+#YS                     
                    **kwargs):
         """Add a figure legend.
 
@@ -715,7 +728,10 @@ class TaylorDiagram(object):
         """
 
         if kwargs.get('handles') is None:
-            handles = self.modelMarkerSet[::-1]
+#YS            handles = self.modelMarkerSet[::-1]
+#YS
+            handles = self.modelMarkerSet # change the legend sequence 
+#YS            
         if kwargs.get('labels') is None:
             labels = [p.get_label() for p in handles]
 
@@ -724,7 +740,12 @@ class TaylorDiagram(object):
                                 loc=loc,
                                 bbox_to_anchor=(xloc, yloc),
                                 fontsize=fontsize,
-                                frameon=False)
+                                frameon=False,
+#YS  
+                                ncol=ncol, # set the number of columns in the legend
+                                handletextpad=handletextpad # set the padding between the handle and the text
+#YS                                
+                                )
         return legend
 
     def add_title(self,
@@ -763,9 +784,14 @@ class TaylorDiagram(object):
         self._ax.set_title(maintitle, fontsize=fontsize, y=y_loc, **kwargs)
 
     def set_fontsizes_and_pad(self,
-                              ticklabel_fontsize: float = 14,
-                              axislabel_fontsize: float = 16,
-                              axislabel_pad: float = 8):
+                              ticklabel_fontsize: float = 6,
+                              axislabel_fontsize: float = 6,
+                              axislabel_pad: float = 5,
+                              tick_length: float = 4,
+                              tick_pad: float = 3,
+                              labelcolor: str = '#6b6b6b',
+                              xwidth: float = 0.5,
+                              ):
         """Reset ticklabel and axis label fontsizes, and axis label padding.
 
         Parameters
@@ -790,11 +816,17 @@ class TaylorDiagram(object):
         - `NCL_taylor_6.py <https://geocat-examples.readthedocs.io/en/latest/gallery/TaylorDiagrams/NCL_taylor_6.html?highlight=set_fontsize_and_pad>`_
         """
 
-        self._ax.axis['top', 'right',
-                      'left'].major_ticklabels.set_fontsize(ticklabel_fontsize)
+        self._ax.axis['top', 'right', 'left'].major_ticklabels.set_fontsize(ticklabel_fontsize)
         self._ax.axis['top', 'right'].label.set_fontsize(axislabel_fontsize)
         self._ax.axis['top', 'right'].label.set_pad(axislabel_pad)
-
+#YS         
+        self._ax.axis['top', 'right', 'left'].major_ticks.set_ticksize(tick_length) # adjust the tick length
+        self._ax.axis['top', 'right', 'left'].major_ticks.set_color(labelcolor) # adjust the tick color
+        self._ax.axis['top', 'right', 'left'].major_ticklabels.set_pad(tick_pad) # ajust the tick padding
+        self._ax.axis['top', 'right', 'left'].line.set_color(labelcolor) # adjust the axis line color
+        self._ax.axis['top', 'right', 'left'].line.set_linewidth(xwidth) # adjust the axis line width
+        self._ax.tick_params(axis='both', which='major', width=xwidth) # adjust the tick width
+#YS         
     # Internal functions
     def _bias_to_marker_size(self, bias):
         """Internal helper function to return integer marker size and string
@@ -833,3 +865,5 @@ class TaylorDiagram(object):
             marker_symbol = 'v'
 
         return marker_size, marker_symbol
+
+

@@ -1,3 +1,8 @@
+# Modification log
+
+The original code does not provide full customization. I modified the Taylor.py to set plotting details. 
+
+
 
 # GeoCAT-viz
 
